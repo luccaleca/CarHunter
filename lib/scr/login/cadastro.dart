@@ -44,67 +44,63 @@ class CadastroPageState extends State<CadastroPage> {
     return emailRegex.hasMatch(email);
   }
 
-  void fazerCadastro(email, senha) async {
-    UserCredential userCredential =
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: email,
-      password: senha,
-    );
+  Future<void> fazerCadastro(String nome, String email, String senha) async {
+  try {
+    // Dados para Firebase Auth
+    final authData = {
+      "email": email,
+      "senha": senha,
+    };
+
+    // Dados para MongoDB
+    final mongoData = {
+      "nome": nome,
+      "email": email,
+    };
+
+    UserCredential userCredential;
+
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // Primeiro, crie o usuário no Firebase Auth
+      userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
-
-      if (userCredential.user != null && userCredential.user!.email != null) {
-        final email = userCredential.user!.email;
-
-        if (userCredential.user != null && userCredential.user!.email != null) {
-          final email = userCredential.user!.email!;
-
-          if (isValidEmail(email)) {
-            // O e-mail é válido, faça o que precisa com ele
-            print('Usuário cadastrado com sucesso e autenticado no Firebase');
-            // Salvar o e-mail no MongoDB
-            final emailParaMongoDB = email;
-            final nomeParaMongoDB = nomeDoUsuario;
-            // Realize a chamada de API para salvar no MongoDB
-            final response = await http.post(
-              Uri.parse(
-                  'http://192.168.15.15:3001/users'), // URL do servidor Node.js
-              headers: <String, String>{
-                'Content-Type': 'application/json; charset=UTF-8',
-              },
-              body: jsonEncode(<String, String>{
-                'nome': nomeParaMongoDB,
-                'email': emailParaMongoDB,
-              }),
-            );
-
-            if (response.statusCode == 200) {
-              // Você não precisa autenticar novamente no Firebase aqui, pois o usuário já está autenticado.
-              final emailParaMongoDB = email; // Corrija a variável para usar o e-mail correto
-              // Faça o que precisa com o email
-              print('Usuário cadastrado com sucesso e autenticado no Firebase');
-            } else {
-              throw Exception('Falha ao cadastrar usuário');
-            }
-          } else {
-            // O e-mail é inválido
-            print('E-mail inválido');
-          }
-        } else {
-          // O usuário ou o email é nulo
-          print('Usuário ou email nulos');
-        }
-      }
     } catch (error) {
-      // Trate erros de autenticação aqui
-      print('Erro ao criar conta no Firebase: $error');
-      throw error;
+      print('Erro ao criar usuário no Firebase Auth: $error');
+      // Lide com o erro, como mostrar uma mensagem de erro ao usuário
+      return;
     }
+
+    if (userCredential.user != null && userCredential.user!.email != null) {
+      final email = userCredential.user!.email;
+
+      // Se o usuário foi criado no Firebase Auth com sucesso, agora envie os dados para o MongoDB
+      final response = await http.post(
+        Uri.parse('http://192.168.15.15:3001/users'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(mongoData),
+      );
+
+      if (response.statusCode == 201) {
+        print('Usuário cadastrado com sucesso no Firebase e no MongoDB');
+        // Lide com a resposta do servidor MongoDB ou Firebase Auth, se necessário
+      } else {
+        print('Erro ao cadastrar usuário no MongoDB');
+        // Lide com o erro, como mostrar uma mensagem de erro ao usuário
+      }
+    } else {
+      print('Erro ao criar usuário no Firebase Auth');
+      // Lide com o erro, como mostrar uma mensagem de erro ao usuário
+    }
+  } catch (error) {
+    print('Erro ao realizar a solicitação: $error');
+    // Lide com o erro, como mostrar uma mensagem de erro ao usuário
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +239,7 @@ class CadastroPageState extends State<CadastroPage> {
 
                     if (senha.length < 6) {
                       // A senha tem menos de 6 caracteres, mostra um aviso.
+                      
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -263,31 +260,48 @@ class CadastroPageState extends State<CadastroPage> {
                       );
                     } else {
                       try {
-                        // Fazer a chamada de API para cadastrar o usuário
-                        await cadastrarUsuario(nome, email, senha);
-                        // O usuário foi cadastrado com sucesso, você pode navegar para a próxima tela ou realizar alguma outra ação aqui.
-                      } catch (e) {
-                        // Se houver algum erro na chamada de API, tratar aqui
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Erro no Cadastro'),
-                              content: Text(
-                                  'Ocorreu um erro ao cadastrar o usuário: $e'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('Fechar'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    }
+          // Fazer a chamada de API para cadastrar o usuário
+          await fazerCadastro(nome, email, senha);
+          // O usuário foi cadastrado com sucesso, você pode navegar para a próxima tela ou realizar alguma outra ação aqui.
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Sucesso no Cadastro'),
+                content: Text('Usuário cadastrado com sucesso!'),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text('Fechar'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        } catch (e) {
+          print('Erro ao chamar a função cadastrarUsuario: $e');
+          // Se houver algum erro na chamada de API, tratar aqui e mostrar uma mensagem de erro.
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Erro no Cadastro'),
+                content: Text('Ocorreu um erro ao cadastrar o usuário: $e'),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text('Fechar'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
                   } else {
                     showDialog(
                       context: context,

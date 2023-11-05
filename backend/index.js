@@ -60,7 +60,7 @@ async function connectToMongoDB() {
       }
     }
 
-    // Cadastro de usuários(no mongo)
+    // Cadastro de usuários(no mongo: nome e email, no firebase: email e senha)
     app.post('/users', async (req, res) => {
       const { nome, email, senha } = req.body;
     
@@ -77,7 +77,7 @@ async function connectToMongoDB() {
     res.status(201).json({ message: 'Usuário cadastrado com sucesso' });
   } catch (error) {
     console.error('Erro ao criar usuário no Firebase:', error);
-    // Lide com o erro, se necessário
+    // Lida com o erro
     res.status(500).json({ message: 'Erro ao criar usuário no Firebase' });
   }
 });
@@ -103,9 +103,9 @@ app.post('/login', async (req, res) => {
     // Autenticar o usuário no Firebase Authentication
     const user = await admin.auth().getUserByEmail(email);
 
-    // Verificar a senha (pode ser opcional dependendo do seu caso)
+    // Verifica a senha
     if (user && user.email === email) {
-      // Agora, você pode criar um token de autenticação, se necessário
+      // Cria um token de autenticação, se necessário
       const token = criarTokenDeAutenticacao(user);
       res.status(200).json({ token });
     } else {

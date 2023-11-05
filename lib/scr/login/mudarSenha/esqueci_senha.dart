@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'redefinicao_senha_sucesso.dart';
+
 
 
 
@@ -39,7 +39,7 @@ class _EsqueciSenhaPageState extends State<EsqueciSenhaPage> {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -52,6 +52,14 @@ class _EsqueciSenhaPageState extends State<EsqueciSenhaPage> {
             key: _formKey,
             child: Column(
               children: <Widget>[
+                Text(
+                  "Por favor, insira o email associado à sua conta para redefinir a senha.",
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 16.0),
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(labelText: "Email"),

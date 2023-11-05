@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart'; 
 import 'package:pi4sm/scr/navbar.dart';
+import 'package:pi4sm/scr/pagina_inicial.dart';
+import 'utils.dart';
 
 class PaginaUsuario extends StatefulWidget {
   const PaginaUsuario({super.key});
@@ -8,6 +10,7 @@ class PaginaUsuario extends StatefulWidget {
   State<PaginaUsuario> createState() => _PaginaUsuarioState();
 }
 
+//modal CRUD                
 void _showEditModal(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -15,7 +18,7 @@ void _showEditModal(BuildContext context) {
       return SingleChildScrollView(
         scrollDirection: Axis.vertical,
         
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -64,42 +67,16 @@ void _showEditModal(BuildContext context) {
 
               child: ElevatedButton(
               onPressed: () {
-                // Lógica para atualizar o nome
+                // Lógica para atualizar o email
                 Navigator.pop(context); // Fechar o modal após a ação
               },
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255,15, 59, 80))
               ),
-              child: Text('Atualizar Email', style: TextStyle(color: Colors.white)),
+              child: const Text('Atualizar Email', style: TextStyle(color: Colors.white)),
             ),
 
 
-            ),
-            
-            const SizedBox(height: 10),
-
-             const Text('Senha'),
-
-            const TextField(
-              decoration: InputDecoration(labelText: 'Nova Senha', labelStyle: TextStyle(color: Colors.grey)),
-            ),
-
-            const SizedBox(height: 10),
-            Container(
-              alignment: Alignment.centerRight,
-              width: 200, 
-              height: 50, 
-
-              child: ElevatedButton(
-              onPressed: () {
-                // Lógica para atualizar o nome
-                Navigator.pop(context); // Fechar o modal após a ação
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 15, 59, 80))
-              ),
-              child: Text('Atualizar Senha', style: TextStyle(color: Colors.white)),
-            ),
             ),
             
 
@@ -110,10 +87,11 @@ void _showEditModal(BuildContext context) {
               height: 50, 
 
               child: ElevatedButton(
-              onPressed: () {
-                // Lógica para atualizar o nome
-                
-                Navigator.pop(context); // Fechar o modal após a ação
+              onPressed: () async {
+                // Lógica para deletar conta
+                await setPopupExibido(false);
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PaginaInicial()));
               },
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 216, 7, 7))
@@ -138,7 +116,7 @@ class _PaginaUsuarioState extends State<PaginaUsuario> {
       extendBodyBehindAppBar: true,
       drawer: NavBar(),
       appBar: AppBar(
-         title: const Text('Minhas informações', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),),
+         title: const Text('Sobre mim', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),),
          backgroundColor: const Color.fromARGB(255, 15, 59, 80),
          shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -203,13 +181,17 @@ class _PaginaUsuarioState extends State<PaginaUsuario> {
                   child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const SizedBox(height: 8),
                     const Icon(Icons.account_circle, size: 90), // Icone no topo
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Nome do Usuário', style: TextStyle(fontSize: 20)), // Texto abaixo do ícone
-                        const SizedBox(height: 10), // Espaço entre o texto e o IconButton
+                        const Expanded(
+                          child: Text('<Nome>', style: TextStyle(fontSize: 20), textAlign: TextAlign.center)
+                        ),
+                        
+                        const SizedBox(height: 2), // Espaço entre o texto e o IconButton
                         IconButton(
                           onPressed: () {
                             _showEditModal(context);
